@@ -1,19 +1,21 @@
 <template>
 	<view class="content">
 		<scroll-view scroll-y class="left-aside">
-			<view v-for="item in flist" :key="item.id" class="f-item b-b" :class="{active: item.id === currentId}" @click="tabtap(item)">
+			<view v-for="item in list" :key="item.id" class="f-item b-b" :class="{active: item.id === currentId}" @click="tabtap(item)">
 				{{item.name}}
 			</view>
 		</scroll-view>
-		<scroll-view scroll-with-animation scroll-y class="right-aside" @scroll="asideScroll" :scroll-top="tabScrollTop">
-			<view v-for="item in slist" :key="item.id" class="s-list" :id="'main-'+item.id">
-				<text class="s-item">{{item.name}}</text>
-				<view class="t-list">
-					<view @click="navToList(item.id, titem.id)" v-if="titem.pid === item.id" class="t-item" v-for="titem in tlist" :key="titem.id">
-						<image :src="titem.picture"></image>
-						<text>{{titem.name}}</text>
-					</view>
-				</view>
+		<scroll-view scroll-with-animation scroll-y class="right-aside" @scroll="asideScroll" :scroll-top="tabScrollTop" >
+			<view  v-for="items in list">
+        <view v-for="item in items.child" :key="item.id" class="s-list" :id="'main-'+item.id" v-if="item.child.length > 0">
+          <text class="s-item">{{item.name}}</text>
+          <view class="t-list">
+            <view @click="navToList(item.id, titem.id)" v-if="titem.pid === item.id" class="t-item"  v-for="titem in item.child" :key="titem.id">
+              <image :src="titem.picture"></image>
+              <text>{{titem.name}}</text>
+            </view>
+          </view>
+        </view>
 			</view>
 		</scroll-view>
 	</view>
@@ -26,26 +28,22 @@
 				sizeCalcState: false,
 				tabScrollTop: 0,
 				currentId: 1,
-				flist: [],
-				slist: [],
-				tlist: [],
+				list: []
 			}
 		},
 		onLoad(){
 			this.loadData();
 		},
 		methods: {
-			async loadData(){
-				let list = await this.$api.json('cateList');
-				list.forEach(item=>{
-					if(!item.pid){
-						this.flist.push(item);  //pid为父级id, 没有pid或者pid=0是一级分类
-					}else if(!item.picture){
-						this.slist.push(item); //没有图的是2级分类
-					}else{
-						this.tlist.push(item); //3级分类
-					}
-				}) 
+			loadData(){
+				this.$http.goods.getCategoryList().then((res) => {
+					this.list = res
+				}).catch((e) => {
+					uni.showToast({
+						title: `${Json.stringify(e)}`,
+						icon: 'none'
+					})
+				})
 			},
 			//一级分类点击
 			tabtap(item){

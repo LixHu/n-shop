@@ -14,8 +14,8 @@
 			<!-- 背景色区域 -->
 			<view class="titleNview-background" :style="{backgroundColor:titleNViewBackground}"></view>
 			<swiper class="carousel" circular @change="swiperChange">
-				<swiper-item v-for="(item, index) in carouselList" :key="index" class="carousel-item" @click="navToDetailPage({title: '轮播广告'})">
-					<image :src="item.src" />
+				<swiper-item v-for="(item, index) in bannerList" :key="index" class="carousel-item" @click="navToDetailPage({title: '轮播广告'})">
+					<image :src="item.goods_banner" />
 				</swiper-item>
 			</swiper>
 			<!-- 自定义swiper指示器 -->
@@ -136,59 +136,15 @@
 		
 		
 		
-		<!-- 分类推荐楼层 -->
-		<view class="f-header m-t">
-			<image src="/static/temp/h1.png"></image>
-			<view class="tit-box">
-				<text class="tit">分类精选</text>
+		<!-- 背景图 -->
+		<!-- <view class="f-header m-t"> -->
+			<!-- <image src="/static/temp/h1.png"></image> -->
+			<!-- <view class="tit-box"> -->
+				<!-- <text class="tit">分类精选</text> -->
 				<!-- <text class="tit2">Competitive Products For You</text> -->
-			</view>
-			<text class="yticon icon-you"></text>
-		</view>
-		<view class="hot-floor">
-			<view class="floor-img-box">
-				<image class="floor-img" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1553409398864&di=4a12763adccf229133fb85193b7cc08f&imgtype=0&src=http%3A%2F%2Fb-ssl.duitang.com%2Fuploads%2Fitem%2F201703%2F19%2F20170319150032_MNwmn.jpeg" mode="scaleToFill"></image>
-			</view>
-			<scroll-view class="floor-list" scroll-x>
-				<view class="scoll-wrapper">
-					<view 
-						v-for="(item, index) in goodsList" :key="index"
-						class="floor-item"
-						@click="navToDetailPage(item)"
-					>
-						<image :src="item.image" mode="aspectFill"></image>
-						<text class="title clamp">{{item.title}}</text>
-						<text class="price">￥{{item.price}}</text>
-					</view>
-					<view class="more">
-						<text>查看全部</text>
-						<text>More+</text>
-					</view>
-				</view>
-			</scroll-view>
-		</view>
-		<view class="hot-floor">
-			<view class="floor-img-box">
-				<image class="floor-img" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1553409984228&di=dee176242038c2d545b7690b303d65ea&imgtype=0&src=http%3A%2F%2Fhbimg.b0.upaiyun.com%2F5ef4da9f17faaf4612f0d5046f4161e556e9bbcfdb5b-rHjf00_fw658" mode="scaleToFill"></image>
-			</view>
-			<scroll-view class="floor-list" scroll-x>
-				<view class="scoll-wrapper">
-					<view 
-						v-for="(item, index) in goodsList" :key="index"
-						class="floor-item"
-						@click="navToDetailPage(item)"
-					>
-						<image :src="item.image3" mode="aspectFill"></image>
-						<text class="title clamp">{{item.title}}</text>
-						<text class="price">￥{{item.price}}</text>
-					</view>
-					<view class="more">
-						<text>查看全部</text>
-						<text>More+</text>
-					</view>
-				</view>
-			</scroll-view>
-		</view>
+			<!-- </view> -->
+			<!-- <text class="yticon icon-you"></text> -->
+		<!-- </view> -->
 		<view class="hot-floor">
 			<view class="floor-img-box">
 				<image class="floor-img" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1553409794730&di=12b840ec4f5748ef06880b85ff63e34e&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01dc03589ed568a8012060c82ac03c.jpg%40900w_1l_2o_100sh.jpg" mode="scaleToFill"></image>
@@ -196,11 +152,11 @@
 			<scroll-view class="floor-list" scroll-x>
 				<view class="scoll-wrapper">
 					<view 
-						v-for="(item, index) in goodsList" :key="index"
+						v-for="(item, index) in commonList" :key="index"
 						class="floor-item"
 						@click="navToDetailPage(item)"
 					>
-						<image :src="item.image2" mode="aspectFill"></image>
+						<image :src="item.goods_icon" mode="aspectFill"></image>
 						<text class="title clamp">{{item.title}}</text>
 						<text class="price">￥{{item.price}}</text>
 					</view>
@@ -228,9 +184,9 @@
 				@click="navToDetailPage(item)"
 			>
 				<view class="image-wrapper">
-					<image :src="item.image" mode="aspectFill"></image>
+					<image :src="item.goods_icon" mode="aspectFill"></image>
 				</view>
-				<text class="title clamp">{{item.title}}</text>
+				<text class="title clamp">{{item.goods_name}}</text>
 				<text class="price">￥{{item.price}}</text>
 			</view>
 		</view>
@@ -248,8 +204,9 @@
 				titleNViewBackground: '',
 				swiperCurrent: 0,
 				swiperLength: 0,
-				carouselList: [],
-				goodsList: []
+				bannerList: [],
+				goodsList: [],
+				commonList: [],
 			};
 		},
 
@@ -261,14 +218,42 @@
 			 * 请求静态数据只是为了代码不那么乱
 			 * 分次请求未作整合
 			 */
-			async loadData() {
-				let carouselList = await this.$api.json('carouselList');
-				this.titleNViewBackground = carouselList[0].background;
-				this.swiperLength = carouselList.length;
-				this.carouselList = carouselList;
+			loadData() {
+				let data = []
+				this.$http.goods.getGoodsList(data).then((res) => {
+					this.goodsList = res
+				}).catch((e) => {
+					uni.showToast({
+						title: `${JSON.stringify(e)}`,
+						icon: 'none'
+					})
+				}) 
+				this.$http.goods.getBanner(data).then((res) => {
+					this.bannerList = res
+					this.swiperLength = res.length
+				}).catch((e) => {
+					uni.showToast({
+						title: `${JSON.stringify(e)}`,
+						
+						icon: 'none'
+					})
+				})
 				
-				let goodsList = await this.$api.json('goodsList');
-				this.goodsList = goodsList || [];
+				this.$http.goods.getRecom(data).then((res) => {
+					this.commonList = res
+				}).catch((e) => {
+					uni.showToast({
+						title: `${JSON.stringify(e)}`,
+						icon: 'none'
+					})
+				})
+				// let carouselList = await this.$api.json('carouselList');
+				// this.titleNViewBackground = carouselList[0].background;
+				// this.swiperLength = carouselList.length;
+				// this.carouselList = carouselList;
+				
+				// let goodsList = await this.$api.json('goodsList');
+				// this.goodsList = goodsList || [];
 			},
 			//轮播图切换修改背景色
 			swiperChange(e) {
@@ -279,7 +264,7 @@
 			//详情页
 			navToDetailPage(item) {
 				//测试数据没有写id，用title代替
-				let id = item.title;
+				let id = item.id;
 				uni.navigateTo({
 					url: `/pages/product/product?id=${id}`
 				})
