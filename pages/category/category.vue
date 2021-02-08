@@ -5,17 +5,15 @@
 				{{item.name}}
 			</view>
 		</scroll-view>
-		<scroll-view scroll-with-animation scroll-y class="right-aside" @scroll="asideScroll" :scroll-top="tabScrollTop" >
-			<view  v-for="items in list">
-        <view v-for="item in items.child" :key="item.id" class="s-list" :id="'main-'+item.id" v-if="item.child.length > 0">
-          <text class="s-item">{{item.name}}</text>
-          <view class="t-list">
-            <view @click="navToList(item.id, titem.id)" v-if="titem.pid === item.id" class="t-item"  v-for="titem in item.child" :key="titem.id">
-              <image :src="titem.picture"></image>
-              <text>{{titem.name}}</text>
-            </view>
-          </view>
-        </view>
+		<scroll-view scroll-with-animation scroll-y class="right-aside" >
+			<view v-for="item in sList" :key="item.id" class="s-list" :id="'main-'+item.id" >
+			  <text class="s-item">{{item.name}}</text>
+			  <view class="t-list">
+				<view @click="navToList(item.id, titem.id)" v-if="titem.pid === item.id" class="t-item"  v-for="titem in item.child" :key="titem.id">
+				  <image :src="titem.picture"></image>
+				  <text>{{titem.name}}</text>
+				</view>
+			  </view>
 			</view>
 		</scroll-view>
 	</view>
@@ -25,10 +23,9 @@
 	export default {
 		data() {
 			return {
-				sizeCalcState: false,
-				tabScrollTop: 0,
 				currentId: 1,
-				list: []
+				list: [],
+				sList: [],
 			}
 		},
 		onLoad(){
@@ -38,6 +35,7 @@
 			loadData(){
 				this.$http.goods.getCategoryList().then((res) => {
 					this.list = res
+					this.sList = res[0].child
 				}).catch((e) => {
 					uni.showToast({
 						title: `${Json.stringify(e)}`,
@@ -47,39 +45,8 @@
 			},
 			//一级分类点击
 			tabtap(item){
-				if(!this.sizeCalcState){
-					this.calcSize();
-				}
-				
-				this.currentId = item.id;
-				let index = this.slist.findIndex(sitem=>sitem.pid === item.id);
-				this.tabScrollTop = this.slist[index].top;
-			},
-			//右侧栏滚动
-			asideScroll(e){
-				if(!this.sizeCalcState){
-					this.calcSize();
-				}
-				let scrollTop = e.detail.scrollTop;
-				let tabs = this.slist.filter(item=>item.top <= scrollTop).reverse();
-				if(tabs.length > 0){
-					this.currentId = tabs[0].pid;
-				}
-			},
-			//计算右侧栏每个tab的高度等信息
-			calcSize(){
-				let h = 0;
-				this.slist.forEach(item=>{
-					let view = uni.createSelectorQuery().select("#main-" + item.id);
-					view.fields({
-						size: true
-					}, data => {
-						item.top = h;
-						h += data.height;
-						item.bottom = h;
-					}).exec();
-				})
-				this.sizeCalcState = true;
+				this.sList = item.child
+				this.currentId = item.id
 			},
 			navToList(sid, tid){
 				uni.navigateTo({
